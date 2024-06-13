@@ -1,6 +1,5 @@
-import React, { ReactElement, useState } from 'react';
-import { APP_COLLAPSE_WIDTH, APP_EXTEND_WIDTH, URLS } from './const';
-import classNames from 'classnames';
+import React, { ReactElement, useState, useEffect, useRef, useCallback } from 'react';
+import { APP_COLLAPSE_WIDTH, APP_EXTEND_WIDTH } from './const';
 import Button from './components/Button';
 
 export default function Panel({
@@ -10,33 +9,43 @@ export default function Panel({
   onWidthChange: (value: number) => void;
   initialEnabled: boolean;
 }): ReactElement {
+  const [isResizing, setIsResizing] = useState(false);
   const [enabled, setEnabled] = useState(initialEnabled);
-  const [sidePanelWidth, setSidePanelWidth] = useState(enabled ? APP_EXTEND_WIDTH : APP_COLLAPSE_WIDTH);
-  const [tabIndex, setTabIndex] = useState(0);
+  const sidebarRef = useRef<HTMLDivElement>(null);
+  const [sidebarWidth, setSidebarWidth] = useState(initialEnabled ? APP_EXTEND_WIDTH : APP_COLLAPSE_WIDTH);
 
-  const handler = (mouseDownEvent) => {
-    const startWidth = sidePanelWidth;
-    const startPosition = mouseDownEvent.pageX;
+  const startResizing = useCallback(() => {
+    setIsResizing(true);
+  }, []);
 
-    function onMouseMove(mouseMoveEvent) {
-      setSidePanelWidth((currentSize) => startWidth + startPosition - mouseMoveEvent.pageX);
-    }
-    function onMouseUp() {
-      document.body.removeEventListener('mousemove', onMouseMove);
-      // uncomment the following line if not using `{ once: true }`
-      // document.body.removeEventListener("mouseup", onMouseUp);
-    }
+  const stopResizing = useCallback(() => {
+    setIsResizing(false);
+  }, []);
 
-    document.body.addEventListener('mousemove', onMouseMove);
-    document.body.addEventListener('mouseup', onMouseUp, { once: true });
-  };
+  const resize = useCallback(
+    (mouseMoveEvent) => {
+      if (isResizing) {
+        setSidebarWidth(window.innerWidth - mouseMoveEvent.clientX);
+        onWidthChange(window.innerWidth - mouseMoveEvent.clientX);
+      }
+    },
+    [isResizing]
+  );
+
+  useEffect(() => {
+    window.addEventListener('mousemove', resize);
+    window.addEventListener('mouseup', stopResizing);
+    return () => {
+      window.removeEventListener('mousemove', resize);
+      window.removeEventListener('mouseup', stopResizing);
+    };
+  }, [resize, stopResizing]);
 
   function handleOnToggle(enabled: boolean) {
-    const value = enabled ? APP_EXTEND_WIDTH : APP_COLLAPSE_WIDTH;
-    setSidePanelWidth(value);
-    onWidthChange(value);
-
     window['chrome'].storage?.local.set({ enabled });
+    const value = enabled ? APP_EXTEND_WIDTH : APP_COLLAPSE_WIDTH;
+    onWidthChange(value);
+    setSidebarWidth(enabled ? APP_EXTEND_WIDTH : APP_COLLAPSE_WIDTH);
   }
 
   function openPanel(force?: boolean) {
@@ -47,33 +56,15 @@ export default function Panel({
 
   return (
     <div
+      ref={sidebarRef}
       style={{
-        width: sidePanelWidth - 5,
         boxShadow: '0px 0px 5px #0000009e',
+        width: sidebarWidth,
       }}
-      className="absolute top-0 right-0 bottom-0 z-max bg-[#F5F8FA] ease-in-out duration-300 overflow-hidden"
+      onMouseDown={(e) => e.preventDefault()}
+      className="absolute top-0 right-0 bottom-0 z-max bg-[#F5F8FA] overflow-hidden"
     >
-      <button id="draghandle" type="button" onMouseDown={handler}>
-        Resize
-      </button>
-      <div
-        className={classNames('absolute h-full flex border-none flex-col ease-linear w-[50px] space-y-3 p-1', {
-          'opacity-0': enabled,
-          '-z-10': enabled,
-        })}
-      >
-        {URLS.map(({ name, image }, _index) => {
-          function onMenuClick(index: number) {
-            setTabIndex(index);
-            openPanel(true);
-          }
-          return (
-            <Button active={_index === tabIndex} onClick={() => onMenuClick(_index)} className="py-2">
-              <img src={image} className="w-full" />
-            </Button>
-          );
-        })}
-      </div>
+      <div className="absolute top-0 bottom-0 left-0 w-1 cursor-w-resize z-50" onMouseDown={startResizing} />
       <div className="absolute bottom-0 left-0 w-[50px] z-10 flex justify-center items-center p-1">
         <Button active={enabled} onClick={() => openPanel()}>
           <span>
