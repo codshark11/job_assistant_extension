@@ -1,0 +1,4 @@
+export const ROUTES = {
+  GENERATOR: 'GENERATOR',
+  SETTINGS: 'SETTINGS',
+};
