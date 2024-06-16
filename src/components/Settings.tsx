@@ -1,12 +1,14 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { saveData } from '../utils/localStorage';
+import { AppContext, AppProps } from '../App';
 
-const Settings = ({ resume, setResume, openAIKey, setOpenAIKey }) => {
+const Settings = () => {
+  const { resume, openAIKey, setResume, setOpenAIKey } = useContext<AppProps>(AppContext);
   const handleSubmit = (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
-    const updatedResume = formData.get('resume');
-    const updatedOpenAIKey = formData.get('openAIKey');
+    const updatedResume = (formData.get('resume') ?? '').toString();
+    const updatedOpenAIKey = (formData.get('openAIKey') ?? '').toString();
     setResume(updatedResume);
     setOpenAIKey(updatedOpenAIKey);
     saveData('resume', updatedResume);

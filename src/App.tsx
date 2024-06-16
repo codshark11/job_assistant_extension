@@ -2,20 +2,32 @@ import React, { ReactElement, useState, useEffect, useRef, useCallback, createCo
 import { BsRobot } from 'react-icons/bs';
 import { IoCloseSharp } from 'react-icons/io5';
 import { LuSettings } from 'react-icons/lu';
-import { APP_COLLAPSE_WIDTH, APP_EXTEND_WIDTH } from './const';
+import { APP_COLLAPSE_WIDTH, APP_EXTEND_WIDTH, ROUTES } from './const';
 import Button from './components/Button';
 import Content from './Content';
-import { ROUTES } from './utils/routes';
 import onMouseMove from './hooks/onMouseMove';
+import { loadData } from './utils/localStorage';
 
 export interface AppProps {
   route: string;
+  openAIKey: string;
+  resume: string;
+  setOpenAIKey: (key: string) => void;
   setRoute: (route: string) => void;
+  setResume: (resume: string) => void;
 }
 
 const defaultAppProps: AppProps = {
   route: ROUTES.GENERATOR,
   setRoute: function (route: string): void {
+    throw new Error('Function not implemented.');
+  },
+  openAIKey: '',
+  setOpenAIKey: function (key: string): void {
+    throw new Error('Function not implemented.');
+  },
+  resume: '',
+  setResume: function (resume: string): void {
     throw new Error('Function not implemented.');
   },
 };
@@ -29,27 +41,48 @@ export default function App({
   onWidthChange: (value: number) => void;
   initialEnabled: boolean;
 }): ReactElement {
+  // Context to manage the route and openAIKey
+  const [route, setRoute] = useState(initialEnabled ? ROUTES.GENERATOR : '');
+  const [openAIKey, setOpenAIKey] = useState('');
+  const [resume, setResume] = useState('');
+
+  // State to manage the sidebar width and control top
   const [sidebarWidth, setSidebarWidth] = useState(initialEnabled ? APP_EXTEND_WIDTH : APP_COLLAPSE_WIDTH);
   const [controlTop, setControlTop] = useState(80);
-  const [route, setRoute] = useState(initialEnabled ? ROUTES.GENERATOR : '');
 
+  // Refs to manage the resizing and moving of the sidebar
   const sidebarRef = useRef<HTMLDivElement>(null);
   const controlRef = useRef<HTMLDivElement>(null);
 
+  // Custom hook to manage the resizing of the sidebar
   const { startResizing } = onMouseMove((mouseMoveEvent) => {
     setSidebarWidth(window.innerWidth - mouseMoveEvent.clientX);
     onWidthChange(window.innerWidth - mouseMoveEvent.clientX);
   });
 
+  // Custom hook to manage the moving of the control
   const { startResizing: startControlMoving } = onMouseMove((mouseMoveEvent) => {
     if (!controlRef.current) return;
     setControlTop(controlRef.current.offsetTop + mouseMoveEvent.movementY);
   });
 
   useEffect(() => {
+    const fetchLocalData = async () => {
+      const fetchedResume = await loadData('resume');
+      const fetchedAIKey = await loadData('openAIKey');
+
+      setResume(fetchedResume);
+      setOpenAIKey(fetchedAIKey); //
+    };
+    fetchLocalData();
+  }, []);
+
+  // Set the initial state of the sidebar
+  useEffect(() => {
     handleOnToggle(initialEnabled);
   }, [initialEnabled]);
 
+  // Function to handle the toggle of the sidebar
   function handleOnToggle(enabled: boolean) {
     window['chrome'].storage?.local.set({ enabled });
     const value = enabled ? APP_EXTEND_WIDTH : APP_COLLAPSE_WIDTH;
@@ -58,13 +91,14 @@ export default function App({
     setRoute('');
   }
 
+  // Function to open the route
   function openRoute(r: string) {
     handleOnToggle(true);
     setRoute(r);
   }
 
   return (
-    <AppContext.Provider value={{ route, setRoute }}>
+    <AppContext.Provider value={{ route, setRoute, openAIKey, setOpenAIKey, resume, setResume }}>
       <div
         ref={sidebarRef}
         style={{

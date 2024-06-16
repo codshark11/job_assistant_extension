@@ -1,8 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { loadData } from '../utils/localStorage';
 import { postChatGPTMessage } from '../utils/chatGPTUtil';
+import { AppProps, AppContext } from '../App';
 
-const Generator = ({ resume, openAIKey }) => {
+const Generator = () => {
+  const { resume, openAIKey } = useContext<AppProps>(AppContext);
   const [isLoading, setIsLoading] = useState(false);
 
   const [jobDescription, setJobDescription] = useState('');
