@@ -1,10 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { IoSettingsSharp } from 'react-icons/io5';
-import { ROUTES } from '../utils/routes';
 import { loadData } from '../utils/localStorage';
 import { postChatGPTMessage } from '../utils/chatGPTUtil';
 
-const Generator = ({ setPage, resume, openAIKey }) => {
+const Generator = ({ resume, openAIKey }) => {
   const [isLoading, setIsLoading] = useState(false);
 
   const [jobDescription, setJobDescription] = useState('');
@@ -37,18 +35,6 @@ const Generator = ({ setPage, resume, openAIKey }) => {
   //Genertor compoent where we get the generarted COver letter
   return (
     <div className="flex flex-col p-5">
-      {/* First Row for the Header  */}
-      <nav className="flex flex-row justify-between mb-4 items-center">
-        <button
-          onClick={() => {
-            setPage(ROUTES.SETTINGS);
-          }}
-          className="bg-[#fb923c77] rounded-full border-2 border-b-2 border-r-2 border-black px-2 py-2 text-2xl font-bold transition-all hover:translate-y-[2px] hover:bg-slate-200 shadow-sm shadow-black"
-        >
-          <IoSettingsSharp />
-        </button>
-      </nav>
-
       <div className="flex-col mb-4">
         <label htmlFor="openAIKey" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
           Job Description

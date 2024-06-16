@@ -1,9 +1,7 @@
 import React from 'react';
-import { IoMdArrowRoundBack } from 'react-icons/io';
-import { ROUTES } from '../utils/routes';
 import { saveData } from '../utils/localStorage';
 
-const Settings = ({ setPage, resume, setResume, openAIKey, setOpenAIKey }) => {
+const Settings = ({ resume, setResume, openAIKey, setOpenAIKey }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
@@ -17,18 +15,6 @@ const Settings = ({ setPage, resume, setResume, openAIKey, setOpenAIKey }) => {
 
   return (
     <div className="flex flex-col p-5">
-      {/* Headers section for the Settings a */}
-      <nav className="flex flex-row justify-between mb-4 items-center">
-        <button
-          onClick={() => {
-            setPage(ROUTES.GENERATOR);
-          }}
-          className="bg-[#fb923c77] rounded-full border-2 border-b-2 border-r-2 border-black px-2 py-2 text-2xl font-bold transition-all hover:translate-y-[2px] hover:bg-slate-200 shadow-sm shadow-black"
-        >
-          <IoMdArrowRoundBack />
-        </button>
-      </nav>
-
       {/* form ompoent to submit the resiume adn api key  */}
       <form className="flex-col" onSubmit={handleSubmit}>
         <div className="mb-6">
