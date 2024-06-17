@@ -10,9 +10,6 @@ async function init() {
   const initialEnabled = await loadData('enabled');
   const initialWidth = (await loadData('width')) || APP_EXTEND_WIDTH;
 
-  console.log('initialEnabled', initialEnabled);
-  console.log('initialWidth', initialWidth);
-
   // Create html tag wrapper
   const htmlWrapper = document.querySelectorAll('html')[0];
   htmlWrapper.id = 'original-html-wrapper';

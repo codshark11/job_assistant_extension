@@ -48,7 +48,7 @@ export default function App({
 
   // State to manage the sidebar width and control top
   const [savedWidth, setSavedWidth] = useState(APP_EXTEND_WIDTH);
-  const [sidebarWidth, setSidebarWidth] = useState(initialEnabled ? APP_EXTEND_WIDTH : APP_COLLAPSE_WIDTH);
+  const [open, setOpen] = useState(initialEnabled);
   const [controlTop, setControlTop] = useState(80);
 
   // Refs to manage the resizing and moving of the sidebar
@@ -58,7 +58,6 @@ export default function App({
   // Custom hook to manage the resizing of the sidebar
   const { startResizing } = onMouseMove((mouseMoveEvent) => {
     const w = window.innerWidth - mouseMoveEvent.clientX;
-    setSidebarWidth(w);
     onWidthChange(w);
     saveData('width', w);
     setSavedWidth(w);
@@ -79,7 +78,6 @@ export default function App({
       setResume(fetchedResume);
       setOpenAIKey(fetchedAIKey);
       setSavedWidth(fetchedWidth || APP_EXTEND_WIDTH);
-      setSidebarWidth(initialEnabled ? fetchedWidth || APP_EXTEND_WIDTH : APP_COLLAPSE_WIDTH);
     };
     fetchLocalData();
   }, [initialEnabled]);
@@ -89,7 +87,7 @@ export default function App({
     saveData('enabled', enabled);
     const value = enabled ? savedWidth : APP_COLLAPSE_WIDTH;
     onWidthChange(value);
-    setSidebarWidth(enabled ? savedWidth : APP_COLLAPSE_WIDTH);
+    setOpen(enabled);
     setRoute('');
   }
 
@@ -99,16 +97,13 @@ export default function App({
     setRoute(r);
   }
 
-  console.log('sidebarWidth', sidebarWidth);
-  console.log('savedWidth', savedWidth);
-
   return (
     <AppContext.Provider value={{ route, setRoute, openAIKey, setOpenAIKey, resume, setResume }}>
       <div
         ref={sidebarRef}
         style={{
           boxShadow: '0px 0px 5px #0000009e',
-          width: sidebarWidth,
+          width: open ? savedWidth : APP_COLLAPSE_WIDTH,
         }}
         className="absolute top-0 right-0 bottom-0 z-max bg-[#F5F8FA] overflow-hidden"
       >
@@ -118,7 +113,7 @@ export default function App({
           ref={controlRef}
           style={{
             top: controlTop,
-            right: sidebarWidth,
+            right: open ? savedWidth : APP_COLLAPSE_WIDTH,
           }}
           className="fixed w-[50px] z-10 p-1"
           onMouseDown={startControlMoving}
