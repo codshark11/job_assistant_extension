@@ -37,6 +37,14 @@ const Generator = () => {
   //Genertor compoent where we get the generarted COver letter
   return (
     <div className="flex flex-col p-5">
+      <div className="mb-4">
+        <button
+          onClick={() => generateCoverLetter()}
+          className="rounded-xl border-2 border-b-2 border-r-2 border-black px-4 py-1 text-md font-serif font-bold transition-all hover:translate-y-[2px] bg-[#fb923c77] hover:bg-slate-200 shadow-sm shadow-black"
+        >
+          {isLoading ? 'Generating..' : 'Generate'}
+        </button>
+      </div>
       <div className="flex-col mb-4">
         <label htmlFor="openAIKey" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
           Job Description
@@ -49,14 +57,6 @@ const Generator = () => {
         />
       </div>
 
-      <div className="mb-4 text-center">
-        <button
-          onClick={() => generateCoverLetter()}
-          className="rounded-xl border-2 border-b-2 border-r-2 border-black px-4 py-1 text-md font-serif font-bold transition-all hover:translate-y-[2px] bg-[#fb923c77] hover:bg-slate-200 shadow-sm shadow-black"
-        >
-          {isLoading ? 'Generating..' : 'Generate'}
-        </button>
-      </div>
       {/* Second row where we get the generated cover letter */}
       <div className="mb-6">
         <label htmlFor="resume" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">

@@ -1,4 +1,4 @@
-import React, { ReactElement, useState, useEffect, useRef, useCallback, createContext, useContext } from 'react';
+import React, { ReactElement, useState, useEffect, useRef, createContext } from 'react';
 import { BsRobot } from 'react-icons/bs';
 import { IoCloseSharp } from 'react-icons/io5';
 import { LuSettings } from 'react-icons/lu';
@@ -6,7 +6,7 @@ import { APP_COLLAPSE_WIDTH, APP_EXTEND_WIDTH, ROUTES } from './const';
 import Button from './components/Button';
 import Content from './Content';
 import onMouseMove from './hooks/onMouseMove';
-import { loadData } from './utils/localStorage';
+import { loadData, saveData } from './utils/localStorage';
 
 export interface AppProps {
   route: string;
@@ -47,6 +47,7 @@ export default function App({
   const [resume, setResume] = useState('');
 
   // State to manage the sidebar width and control top
+  const [savedWidth, setSavedWidth] = useState(APP_EXTEND_WIDTH);
   const [sidebarWidth, setSidebarWidth] = useState(initialEnabled ? APP_EXTEND_WIDTH : APP_COLLAPSE_WIDTH);
   const [controlTop, setControlTop] = useState(80);
 
@@ -56,8 +57,11 @@ export default function App({
 
   // Custom hook to manage the resizing of the sidebar
   const { startResizing } = onMouseMove((mouseMoveEvent) => {
-    setSidebarWidth(window.innerWidth - mouseMoveEvent.clientX);
-    onWidthChange(window.innerWidth - mouseMoveEvent.clientX);
+    const w = window.innerWidth - mouseMoveEvent.clientX;
+    setSidebarWidth(w);
+    onWidthChange(w);
+    saveData('width', w);
+    setSavedWidth(w);
   });
 
   // Custom hook to manage the moving of the control
@@ -70,24 +74,22 @@ export default function App({
     const fetchLocalData = async () => {
       const fetchedResume = await loadData('resume');
       const fetchedAIKey = await loadData('openAIKey');
+      const fetchedWidth = await loadData('width');
 
       setResume(fetchedResume);
-      setOpenAIKey(fetchedAIKey); //
+      setOpenAIKey(fetchedAIKey);
+      setSavedWidth(fetchedWidth || APP_EXTEND_WIDTH);
+      setSidebarWidth(initialEnabled ? fetchedWidth || APP_EXTEND_WIDTH : APP_COLLAPSE_WIDTH);
     };
     fetchLocalData();
-  }, []);
-
-  // Set the initial state of the sidebar
-  useEffect(() => {
-    handleOnToggle(initialEnabled);
   }, [initialEnabled]);
 
   // Function to handle the toggle of the sidebar
   function handleOnToggle(enabled: boolean) {
-    window['chrome'].storage?.local.set({ enabled });
-    const value = enabled ? APP_EXTEND_WIDTH : APP_COLLAPSE_WIDTH;
+    saveData('enabled', enabled);
+    const value = enabled ? savedWidth : APP_COLLAPSE_WIDTH;
     onWidthChange(value);
-    setSidebarWidth(enabled ? APP_EXTEND_WIDTH : APP_COLLAPSE_WIDTH);
+    setSidebarWidth(enabled ? savedWidth : APP_COLLAPSE_WIDTH);
     setRoute('');
   }
 
@@ -96,6 +98,9 @@ export default function App({
     handleOnToggle(true);
     setRoute(r);
   }
+
+  console.log('sidebarWidth', sidebarWidth);
+  console.log('savedWidth', savedWidth);
 
   return (
     <AppContext.Provider value={{ route, setRoute, openAIKey, setOpenAIKey, resume, setResume }}>
